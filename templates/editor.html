@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Baptism Program Builder</title>
+  <link rel="icon" type="image/svg+xml" href="static/favicon.svg">
+  <link rel="stylesheet" href="static/app.css">
+  <script src="static/app.js" defer></script>
+</head>
+<body class="editor-page">
+  <header class="topbar no-print">
+    <a class="brand" href="./">
+      <span class="brand-mark" aria-hidden="true">B</span>
+      <span><strong>Baptism Program Builder</strong><small>Make every program your own</small></span>
+    </a>
+    <div class="file-actions" aria-label="Program actions">
+      <span class="save-status" id="save-status" role="status" aria-live="polite"></span>
+      <button type="button" class="secondary-button" id="download-save">Download save</button>
+      <label class="button-label" for="load-save">Load save</label>
+      <input id="load-save" type="file" accept="application/json,.json" hidden>
+      <button type="button" class="secondary-button" id="print-sample">Download sample PDF</button>
+      <button type="button" id="print-program">Print / PDF</button>
+    </div>
+  </header>
+
+  <main class="builder no-print">
+    <aside class="control-panel">
+      <section class="control-section design-section">
+        <div class="section-heading">
+          <div><span class="step-label">Design</span><h1>Set the look</h1></div>
+          <button type="button" class="quiet-button" id="reset-theme">Reset</button>
+        </div>
+
+        <label>Quick style
+          <select id="theme-preset">
+            <option value="custom">Custom</option>
+            <option value="monochrome">Black &amp; white</option>
+            <option value="classic">Classic</option>
+            <option value="sage">Soft sage</option>
+            <option value="blue">Water blue</option>
+            <option value="blush">Warm blush</option>
+            <option value="night">Midnight</option>
+          </select>
+        </label>
+        <div class="color-grid">
+          <label>Paper<input type="color" id="paper-color" value="#fffdf8"></label>
+          <label>Text<input type="color" id="text-color" value="#20201e"></label>
+          <label>Accent<input type="color" id="accent-color" value="#708a7b"></label>
+        </div>
+        <label>Typeface
+          <select id="font-family">
+            <option value="serif">Classic serif</option>
+            <option value="sans">Clean sans serif</option>
+            <option value="soft">Soft rounded</option>
+          </select>
+        </label>
+        <label class="checkbox-control">
+          <input type="checkbox" id="monochrome-images">
+          <span><strong>Grayscale mode</strong><small>Convert the whole program to black &amp; white — for printing without a color printer.</small></span>
+        </label>
+      </section>
+
+      <section class="control-section page-section">
+        <span class="step-label">Content</span>
+        <h2>Choose a page</h2>
+        <label>Start from a program template
+          <select id="content-template">
+            <option value="">Choose a template…</option>
+            <option value="child-same-day">Child baptism + confirmation</option>
+            <option value="child-later">Child baptism only (confirmed later)</option>
+            <option value="convert">Convert baptism</option>
+            <option value="multiple">Multiple candidates</option>
+          </select>
+        </label>
+        <div class="page-tabs" id="page-tabs" role="tablist" aria-label="Program pages"></div>
+      </section>
+
+      <section class="control-section block-section">
+        <div class="section-heading">
+          <div><span class="step-label" id="current-page-label">Front cover</span><h2>Page elements</h2></div>
+          <span class="element-count" id="element-count"></span>
+        </div>
+        <p class="section-help">Edit, remove, or move any element. The page updates immediately.</p>
+        <div class="block-list" id="block-list"></div>
+
+        <div class="add-element">
+          <label for="new-block-type">Add an element</label>
+          <div class="add-element-row">
+            <select id="new-block-type">
+              <option value="heading">Heading</option>
+              <option value="text">Text</option>
+              <option value="item">Program item</option>
+              <option value="callout">Callout section</option>
+              <option value="hymn">Hymn</option>
+              <option value="markdown">Markdown text</option>
+              <option value="image">Image</option>
+              <option value="decoration">Decoration</option>
+              <option value="spacer">Space</option>
+            </select>
+            <button type="button" id="add-block">Add</button>
+          </div>
+        </div>
+      </section>
+    </aside>
+
+    <section class="canvas-panel">
+      <div class="canvas-heading">
+        <div><span class="step-label">Live preview</span><h2>Your four-page program</h2></div>
+        <div class="canvas-heading-side">
+          <button type="button" class="secondary-button" id="toggle-focus" aria-pressed="false">Expand page</button>
+          <p>Select a page to edit it. The arrow controls keep the printed layout predictable.</p>
+        </div>
+      </div>
+      <div class="live-preview-grid" id="live-preview" aria-label="Live four-page preview"></div>
+      <div class="print-tip">
+        <strong>Ready to print?</strong>
+        The booklet is arranged automatically as <span>Back + Front</span>, then <span>Inside Left + Inside Right</span>.
+        Want to send a preview instead? <span>Download sample PDF</span> lays the four pages out in plain reading order — no folding required to make sense of it.
+      </div>
+    </section>
+  </main>
+
+  <div class="print-only" id="print-program-pages" aria-hidden="true">
+    <section class="print-sheet">
+      <div class="print-page" data-print-page="back"></div>
+      <div class="print-page" data-print-page="front"></div>
+    </section>
+    <section class="print-sheet">
+      <div class="print-page" data-print-page="inside-left"></div>
+      <div class="print-page" data-print-page="inside-right"></div>
+    </section>
+  </div>
+
+  <div class="print-only" id="print-sample-pages" aria-hidden="true">
+    <section class="print-sheet-single"><div class="print-page" data-print-page="front"></div></section>
+    <section class="print-sheet-single"><div class="print-page" data-print-page="inside-left"></div></section>
+    <section class="print-sheet-single"><div class="print-page" data-print-page="inside-right"></div></section>
+    <section class="print-sheet-single"><div class="print-page" data-print-page="back"></div></section>
+  </div>
+</body>
+</html>
