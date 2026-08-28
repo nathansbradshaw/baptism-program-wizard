@@ -21,6 +21,7 @@
     item: "Program item",
     callout: "Callout section",
     hymn: "Hymn",
+    quote: "Scripture / quote",
     markdown: "Markdown text",
     image: "Image",
     decoration: "Decoration",
@@ -55,6 +56,9 @@
   const draftKey = "baptism-program-document-v2";
   let selectedPage = "front";
   let focusMode = false;
+  let previewZoom = 1;
+  let pageClipboard = null;
+  let highlightedBlockId = "";
   let saveTimer;
   let statusTimer;
 
@@ -75,14 +79,19 @@
     font: document.querySelector("#font-family"),
     monochrome: document.querySelector("#monochrome-images"),
     status: document.querySelector("#save-status"),
-    load: document.querySelector("#load-save")
+    load: document.querySelector("#load-save"),
+    copyPage: document.querySelector("#copy-page"),
+    pastePage: document.querySelector("#paste-page"),
+    zoomOut: document.querySelector("#zoom-out"),
+    zoomIn: document.querySelector("#zoom-in"),
+    zoomValue: document.querySelector("#zoom-value")
   };
 
   function id() {
     return globalThis.crypto?.randomUUID?.() || `block-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   }
 
-  const typographyBlockTypes = ["heading", "text", "item", "callout", "hymn", "markdown"];
+  const typographyBlockTypes = ["heading", "text", "item", "callout", "hymn", "quote", "markdown"];
   const fontStacks = {
     serif: 'Georgia, "Times New Roman", serif',
     sans: "Arial, Helvetica, sans-serif",
@@ -107,6 +116,13 @@
         lyricsAlign: "left",
         columns: "1"
       },
+      quote: {
+        text: "And Jesus, when he was baptized, went up straightway out of the water.",
+        citation: "Matthew 3:16",
+        kind: "scripture",
+        size: "medium",
+        align: "center"
+      },
       markdown: { text: "Use **bold** and *italic* for emphasis.\n\nA blank line starts a new paragraph.\n\n- Put list items on their own lines\n- Separated from other text by a blank line", align: "left" },
       image: { data: "", art: "", size: "medium", shape: "soft", caption: "" },
       decoration: { style: "olive", size: "medium" },
@@ -115,6 +131,72 @@
     const merged = { id: id(), type, ...defaults[type], ...values };
     if (typographyBlockTypes.includes(type) && !merged.typography) merged.typography = defaultTypography();
     return merged;
+  }
+
+  function onePageServiceTemplate(layout) {
+    const hymn = (title) => block("hymn", {
+      title,
+      lyrics: "Paste the hymn verses and chorus here.",
+      size: layout === "two-left" ? "small" : "medium",
+      align: "center",
+      lyricsAlign: "left"
+    });
+    const insideLeftBlocks = layout === "two-left"
+      ? [hymn("Opening Hymn"), block("decoration", { style: "line", size: "small" }), hymn("Closing Hymn")]
+      : [hymn("Opening Hymn")];
+    const backBlocks = layout === "split"
+      ? [hymn("Closing Hymn")]
+      : [
+          block("spacer", { size: "medium" }),
+          block("decoration", { style: "olive", size: "large" }),
+          block("heading", { text: "Thank You for Joining Us", size: "medium", align: "center" }),
+          block("text", { text: "We are grateful for your love and support on this special day.", style: "italic", align: "center" }),
+          block("quote", {
+            text: "And Jesus, when he was baptized, went up straightway out of the water.",
+            citation: "Matthew 3:16",
+            kind: "scripture",
+            size: "small",
+            align: "center"
+          })
+        ];
+
+    return [
+      {
+        id: "front",
+        blocks: [
+          block("text", { text: "BAPTISM OF", style: "eyebrow", align: "center" }),
+          block("heading", { text: "Name Placeholder", size: "large", align: "center" }),
+          block("decoration", { style: "line", size: "small" }),
+          block("image", { art: "baptism-river", size: "large", shape: "square" }),
+          block("text", { text: "August 30, 2026 · 5:00 PM", align: "center" }),
+          block("text", { text: "Ward or Stake Name\nCity, State", style: "italic", align: "center" }),
+          block("decoration", { style: "olive", size: "large" })
+        ]
+      },
+      { id: "inside-left", blocks: insideLeftBlocks },
+      {
+        id: "inside-right",
+        blocks: [
+          block("heading", { text: "Order of Service", size: "medium", align: "center" }),
+          block("decoration", { style: "temple", size: "medium" }),
+          block("item", { label: "Presiding", text: "Name", size: "compact", style: "dotted" }),
+          block("item", { label: "Conducting", text: "Name", size: "compact", style: "dotted" }),
+          block("item", { label: "Pianist", text: "Name", size: "compact", style: "dotted" }),
+          block("item", { label: "Chorister", text: "Name", size: "compact", style: "dotted" }),
+          block("decoration", { style: "line", size: "small" }),
+          block("item", { label: "Opening Hymn", text: "Hymn title and number", size: "compact", style: "plain" }),
+          block("item", { label: "Opening Prayer", text: "Name", size: "compact", style: "plain" }),
+          block("item", { label: "Talk on Baptism", text: "Name", size: "compact", style: "plain" }),
+          block("callout", { title: "Baptism of Name", subtitle: "Performed by Name | Witnesses: Name & Name", size: "small" }),
+          block("item", { label: "Talk on the Holy Ghost", text: "Name", size: "compact", style: "plain" }),
+          block("callout", { title: "Confirmation", subtitle: "Performed by Name", size: "small" }),
+          block("item", { label: "Welcome", text: "Name", size: "compact", style: "plain" }),
+          block("item", { label: "Closing Hymn", text: "Hymn title and number", size: "compact", style: "plain" }),
+          block("item", { label: "Closing Prayer", text: "Name", size: "compact", style: "plain" })
+        ]
+      },
+      { id: "back", blocks: backBlocks }
+    ];
   }
 
   const contentTemplates = {
@@ -368,6 +450,18 @@
           ]
         }
       ]
+    },
+    "service-one-hymn": {
+      label: "One-page service + one hymn",
+      build: () => onePageServiceTemplate("one-left")
+    },
+    "service-two-hymns": {
+      label: "One-page service + two hymns inside",
+      build: () => onePageServiceTemplate("two-left")
+    },
+    "service-split-hymns": {
+      label: "One-page service + hymns split",
+      build: () => onePageServiceTemplate("split")
     }
   };
 
@@ -382,6 +476,73 @@
 
   function currentPage() {
     return documentState.pages.find((page) => page.id === selectedPage);
+  }
+
+  function pageClipboardPayload(page) {
+    return {
+      format: "baptism-program-page",
+      version: 1,
+      copiedFrom: page.id,
+      blocks: JSON.parse(JSON.stringify(page.blocks))
+    };
+  }
+
+  function parsePageClipboard(value) {
+    try {
+      const candidate = typeof value === "string" ? JSON.parse(value) : value;
+      if (candidate?.format !== "baptism-program-page" || candidate.version !== 1 || !Array.isArray(candidate.blocks)) return null;
+      return candidate;
+    } catch {
+      return null;
+    }
+  }
+
+  async function copyCurrentPage() {
+    pageClipboard = pageClipboardPayload(currentPage());
+    const serialized = JSON.stringify(pageClipboard);
+    try {
+      sessionStorage.setItem("baptism-program-page-clipboard-v1", serialized);
+    } catch {
+      // The in-memory copy still works when a page contains an image too large for storage.
+    }
+    try {
+      await navigator.clipboard?.writeText(serialized);
+    } catch {
+      // Clipboard permission is optional; the in-app copy remains available.
+    }
+    const label = pageDefinitions.find((entry) => entry.id === selectedPage)?.label || "Page";
+    showStatus(`${label} copied. Choose a page and paste.`);
+  }
+
+  async function readPageClipboard() {
+    try {
+      const fromSystem = parsePageClipboard(await navigator.clipboard?.readText());
+      if (fromSystem) return fromSystem;
+    } catch {
+      // Fall through to the in-app clipboard.
+    }
+    if (pageClipboard) return pageClipboard;
+    try {
+      return parsePageClipboard(sessionStorage.getItem("baptism-program-page-clipboard-v1"));
+    } catch {
+      return null;
+    }
+  }
+
+  async function pasteCurrentPage() {
+    const copied = await readPageClipboard();
+    if (!copied) {
+      showStatus("Copy a program page first, then paste it here.", true);
+      return;
+    }
+    const destination = currentPage();
+    const label = pageDefinitions.find((entry) => entry.id === selectedPage)?.label || "selected page";
+    if (destination.blocks.length && !confirm(`Replace every element on ${label} with the copied page?`)) return;
+    destination.blocks = copied.blocks.slice(0, 100).map(sanitizeBlock).filter(Boolean).map((item) => ({ ...item, id: id() }));
+    renderBlockEditor();
+    renderPages();
+    scheduleSave();
+    showStatus(`Copied page pasted onto ${label}.`);
   }
 
   function showStatus(message, isError = false) {
@@ -467,6 +628,12 @@
       clean.align = sanitizeChoice(candidate.align, ["left", "center", "right"], "center");
       clean.lyricsAlign = sanitizeChoice(candidate.lyricsAlign, ["left", "center", "right"], "left");
       clean.columns = sanitizeChoice(candidate.columns, ["1", "2"], "1");
+    } else if (candidate.type === "quote") {
+      clean.text = sanitizeText(candidate.text, clean.text);
+      clean.citation = sanitizeText(candidate.citation, clean.citation);
+      clean.kind = sanitizeChoice(candidate.kind, ["scripture", "quote"], "scripture");
+      clean.size = sanitizeChoice(candidate.size, ["small", "medium", "large"], "medium");
+      clean.align = sanitizeChoice(candidate.align, ["left", "center", "right"], "center");
     } else if (candidate.type === "markdown") {
       clean.text = sanitizeText(candidate.text, clean.text);
       clean.align = sanitizeChoice(candidate.align, ["left", "center", "right"], "left");
@@ -675,6 +842,14 @@
       node.append(make("h3", "program-hymn-title", item.title), lyricsNode);
       return node;
     }
+    if (item.type === "quote") {
+      const node = make("figure", `program-quote kind-${item.kind} size-${item.size} align-${item.align}`);
+      const quoteNode = make("blockquote", "program-quote-text", item.text);
+      applyTypography(quoteNode, item.typography);
+      node.append(quoteNode);
+      if (item.citation) node.append(make("figcaption", "program-quote-citation", item.citation));
+      return node;
+    }
     if (item.type === "markdown") {
       const node = make("div", "program-markdown");
       node.style.textAlign = item.align;
@@ -760,7 +935,13 @@
     outer.style.setProperty("--page-text", monochrome ? toGrayscale(documentState.theme.text) : documentState.theme.text);
     outer.style.setProperty("--page-accent", monochrome ? toGrayscale(documentState.theme.accent) : documentState.theme.accent);
     const inner = make("div", "program-page-inner");
-    page.blocks.forEach((item) => inner.append(renderProgramBlock(item, forPrint)));
+    page.blocks.forEach((item, index) => {
+      const rendered = renderProgramBlock(item, forPrint);
+      rendered.classList.add("program-block");
+      rendered.dataset.blockId = item.id;
+      rendered.dataset.blockNumber = String(index + 1);
+      inner.append(rendered);
+    });
     outer.append(inner);
     return outer;
   }
@@ -827,6 +1008,21 @@
       shell.addEventListener("click", () => selectPage(page.id));
       elements.livePreview.append(shell);
 
+      shell.querySelectorAll("[data-block-id]").forEach((previewBlock) => {
+        const blockId = previewBlock.dataset.blockId;
+        previewBlock.addEventListener("pointerenter", () => setLinkedHighlight(blockId));
+        previewBlock.addEventListener("pointerleave", () => setLinkedHighlight(""));
+        previewBlock.addEventListener("click", (event) => {
+          event.stopPropagation();
+          if (page.id !== selectedPage) selectPage(page.id);
+          requestAnimationFrame(() => {
+            const card = [...elements.blockList.querySelectorAll(".block-card")].find((entry) => entry.dataset.blockId === blockId);
+            card?.scrollIntoView({ behavior: "smooth", block: "center" });
+            setLinkedHighlight(blockId);
+          });
+        });
+      });
+
       document.querySelectorAll(`[data-print-page="${page.id}"]`).forEach((target) => {
         target.replaceChildren(buildProgramPage(page, true));
       });
@@ -839,7 +1035,19 @@
         shell.classList.toggle("has-overflow", overflowing);
         if (overflowing) shell.append(make("span", "overflow-warning", "Too much content"));
       });
+      applyLinkedHighlight();
     });
+  }
+
+  function applyLinkedHighlight() {
+    document.querySelectorAll(".block-card[data-block-id], .page-preview-shell [data-block-id]").forEach((node) => {
+      node.classList.toggle("is-linked-highlight", Boolean(highlightedBlockId) && node.dataset.blockId === highlightedBlockId);
+    });
+  }
+
+  function setLinkedHighlight(blockId) {
+    highlightedBlockId = blockId;
+    applyLinkedHighlight();
   }
 
   function selectPage(pageId) {
@@ -851,8 +1059,15 @@
 
   function updateFocusMode() {
     elements.livePreview.classList.toggle("is-focused", focusMode);
+    elements.livePreview.style.setProperty("--focus-width", `${Math.round(528 * previewZoom)}px`);
+    elements.livePreview.style.setProperty("--focus-height", `${Math.round(816 * previewZoom)}px`);
+    elements.livePreview.style.setProperty("--focus-transform", `scale(${previewZoom})`);
     elements.toggleFocus.setAttribute("aria-pressed", String(focusMode));
     elements.toggleFocus.textContent = focusMode ? "Show all pages" : "Expand page";
+    elements.zoomValue.value = `${Math.round(previewZoom * 100)}%`;
+    elements.zoomValue.textContent = elements.zoomValue.value;
+    elements.zoomOut.disabled = previewZoom <= .6;
+    elements.zoomIn.disabled = previewZoom >= 1.2;
   }
 
   function labelControl(text, control) {
@@ -973,6 +1188,15 @@
       card.append(make("p", "field-hint", "Center or right lyrics can look ragged once a line wraps onto a second line — left works best for most hymns."));
       card.append(labelControl("Layout", selectControl(item.columns || "1", [["1", "One column"], ["2", "Two columns (fits more per page)"]], (value) => changeBlock(item, "columns", value))));
       renderTypographyControls(card, item, "Applies to the lyrics (not the title).");
+    } else if (item.type === "quote") {
+      card.append(labelControl("Passage", textareaControl(item.text, (value) => changeBlock(item, "text", value), 5)));
+      card.append(labelControl("Reference or attribution", inputControl(item.citation, (value) => changeBlock(item, "citation", value))));
+      card.append(makeRow([
+        labelControl("Type", selectControl(item.kind, [["scripture", "Scripture"], ["quote", "Quotation"]], (value) => changeBlock(item, "kind", value))),
+        labelControl("Size", selectControl(item.size, [["small", "Small"], ["medium", "Medium"], ["large", "Large"]], (value) => changeBlock(item, "size", value)))
+      ]));
+      card.append(labelControl("Align", selectControl(item.align, [["left", "Left"], ["center", "Center"], ["right", "Right"]], (value) => changeBlock(item, "align", value))));
+      renderTypographyControls(card, item, "Applies to the passage (not the reference).");
     } else if (item.type === "markdown") {
       card.append(labelControl("Text", textareaControl(item.text, (value) => changeBlock(item, "text", value), 6)));
       card.append(make("p", "field-hint", 'Supports **bold**, *italic*, and blank lines for new paragraphs. For a list, put every item on its own line starting with "- " (or "1. "), separated from other text by a blank line.'));
@@ -1099,8 +1323,11 @@
 
     page.blocks.forEach((item, index) => {
       const card = make("article", "block-card");
+      card.dataset.blockId = item.id;
       const header = make("header", "block-card-header");
-      header.append(make("strong", "", blockNames[item.type]));
+      const title = make("div", "block-card-title");
+      title.append(make("span", "link-number", String(index + 1)), make("strong", "", blockNames[item.type]));
+      header.append(title);
       const actions = make("div", "block-actions");
       const action = (label, title, disabled, handler, className = "") => {
         const button = make("button", `icon-button ${className}`, label);
@@ -1120,8 +1347,17 @@
       header.append(actions);
       card.append(header);
       renderBlockFields(card, item);
+      card.addEventListener("pointerenter", () => setLinkedHighlight(item.id));
+      card.addEventListener("pointerleave", () => {
+        if (!card.contains(document.activeElement)) setLinkedHighlight("");
+      });
+      card.addEventListener("focusin", () => setLinkedHighlight(item.id));
+      card.addEventListener("focusout", (event) => {
+        if (!card.contains(event.relatedTarget)) setLinkedHighlight("");
+      });
       elements.blockList.append(card);
     });
+    applyLinkedHighlight();
   }
 
   function moveBlock(index, direction) {
@@ -1320,6 +1556,19 @@
 
   elements.toggleFocus.addEventListener("click", () => {
     focusMode = !focusMode;
+    updateFocusMode();
+  });
+
+  elements.copyPage.addEventListener("click", copyCurrentPage);
+  elements.pastePage.addEventListener("click", pasteCurrentPage);
+  elements.zoomOut.addEventListener("click", () => {
+    previewZoom = Math.max(.6, Math.round((previewZoom - .1) * 10) / 10);
+    focusMode = true;
+    updateFocusMode();
+  });
+  elements.zoomIn.addEventListener("click", () => {
+    previewZoom = Math.min(1.2, Math.round((previewZoom + .1) * 10) / 10);
+    focusMode = true;
     updateFocusMode();
   });
 

@@ -32,8 +32,13 @@ BAPTISM_PROGRAM_ADDRESS=127.0.0.1:3001 cargo run
 The four-page preview updates while you work. Each page is built from movable
 elements rather than a prescribed form. You can:
 
-- Add, duplicate, reorder, and remove headings, text, program items, images,
-  decorations, and spacing on any page
+- Add, duplicate, reorder, and remove headings, text, program items, hymns,
+  scripture/quote blocks, images, decorations, and spacing on any page
+- Copy every element on one page and paste it onto another page
+- Expand the selected page and adjust its preview from 60% to 120%
+- Match numbered sidebar elements to their counterparts in the live preview
+- Start from standard templates or one-page-service layouts with hymns together
+  on the inside left or split between the inside left and back
 - Choose a style preset or set the paper, text, and accent colors yourself
 - Create printer-friendly programs with the black-and-white preset and optional
   automatic grayscale conversion for images
@@ -73,6 +78,5 @@ GitHub Actions**.
 
 ## Next improvements
 
-- Multiple templates
 - Shareable links
 - QR code for digital program

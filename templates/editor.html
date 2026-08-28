@@ -71,9 +71,17 @@
             <option value="child-later">Child baptism only (confirmed later)</option>
             <option value="convert">Convert baptism</option>
             <option value="multiple">Multiple candidates</option>
+            <option value="service-one-hymn">One-page service + one hymn</option>
+            <option value="service-two-hymns">One-page service + two hymns inside</option>
+            <option value="service-split-hymns">One-page service + hymns split</option>
           </select>
         </label>
         <div class="page-tabs" id="page-tabs" role="tablist" aria-label="Program pages"></div>
+        <div class="page-clipboard-actions" aria-label="Copy or paste a complete page">
+          <button type="button" class="secondary-button" id="copy-page">Copy page</button>
+          <button type="button" class="secondary-button" id="paste-page">Paste page</button>
+        </div>
+        <p class="page-clipboard-help">Copies every element on the selected page. Choose another page, then paste to replace it.</p>
       </section>
 
       <section class="control-section block-section">
@@ -93,6 +101,7 @@
               <option value="item">Program item</option>
               <option value="callout">Callout section</option>
               <option value="hymn">Hymn</option>
+              <option value="quote">Scripture / quote</option>
               <option value="markdown">Markdown text</option>
               <option value="image">Image</option>
               <option value="decoration">Decoration</option>
@@ -108,7 +117,14 @@
       <div class="canvas-heading">
         <div><span class="step-label">Live preview</span><h2>Your four-page program</h2></div>
         <div class="canvas-heading-side">
-          <button type="button" class="secondary-button" id="toggle-focus" aria-pressed="false">Expand page</button>
+          <div class="preview-actions">
+            <button type="button" class="secondary-button" id="toggle-focus" aria-pressed="false">Expand page</button>
+            <div class="preview-zoom" aria-label="Expanded page size">
+              <button type="button" class="secondary-button" id="zoom-out" aria-label="Make preview smaller">−</button>
+              <output id="zoom-value" aria-live="polite">100%</output>
+              <button type="button" class="secondary-button" id="zoom-in" aria-label="Make preview larger">+</button>
+            </div>
+          </div>
           <p>Select a page to edit it. The arrow controls keep the printed layout predictable.</p>
         </div>
       </div>
