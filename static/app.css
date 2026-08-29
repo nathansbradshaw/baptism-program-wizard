@@ -270,6 +270,10 @@ textarea { min-height: 78px; resize: vertical; line-height: 1.4; }
 .decoration-symbol { overflow: visible; fill: none; stroke: currentColor; stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round; }
 .decoration-dove .decoration-symbol { stroke-width: 2; }
 .decoration-rays .decoration-symbol { stroke-width: 2; }
+.decoration-custom-image { display: block; width: auto; max-width: 2in; height: .36in; object-fit: contain; }
+.size-small .decoration-custom-image { height: .2in; }
+.size-large .decoration-custom-image { height: .58in; }
+.decoration-placeholder { display: grid; place-items: center; width: 1.35in; height: .36in; border: 2px dashed color-mix(in srgb, var(--page-accent) 50%, transparent); color: var(--page-accent); background: color-mix(in srgb, var(--page-accent) 7%, var(--page-paper)); font: 700 11px Arial, sans-serif; }
 .program-spacer.size-small { height: .16in; }
 .program-spacer.size-medium { height: .42in; }
 .program-spacer.size-large { height: .95in; }

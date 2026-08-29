@@ -34,7 +34,7 @@ elements rather than a prescribed form. You can:
 
 - Add, duplicate, reorder, and remove headings, text, program items, hymns,
   scripture/quote blocks, images, decorations, and spacing on any page
-- Copy every element on one page and paste it onto another page
+- Copy every element on one page and paste it into another program window
 - Expand the selected page and adjust its preview from 60% to 120%
 - Match numbered sidebar elements to their counterparts in the live preview
 - Start from standard templates or one-page-service layouts with hymns together

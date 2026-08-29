@@ -30,12 +30,15 @@
 
   const decorationOptions = [
     ["olive", "Olive branch"],
-    ["water", "Baptismal waters"],
+    ["water", "Baptismal water"],
+    ["jordan", "River Jordan"],
     ["dove", "Dove"],
     ["scriptures", "Open scriptures"],
-    ["temple", "Temple spire"],
+    ["temple", "Temple"],
+    ["tree-life", "Tree of Life"],
     ["rays", "Light rays"],
-    ["line", "Simple divider"]
+    ["line", "Simple divider"],
+    ["custom", "Custom"]
   ];
   const decorationStyles = decorationOptions.map(([value]) => value);
 
@@ -44,16 +47,32 @@
     { id: "baptism-of-christ", group: "human", name: "Baptism of Christ", src: "static/art/baptism-of-christ.webp", alt: "Hand-drawn illustration of Jesus Christ after His baptism, with a dove above Him" },
     { id: "christ-and-john", group: "human", name: "Christ and John", src: "static/art/christ-and-john.webp", alt: "Hand-drawn illustration of Jesus Christ speaking with John the Baptist" },
     { id: "good-shepherd", group: "human", name: "The Good Shepherd", src: "static/art/good-shepherd.webp", alt: "Hand-drawn illustration of a shepherd guiding his flock" },
-    { id: "font-room", group: "ai", name: "Baptismal font", src: "static/art/storybook-baptismal-font.webp", alt: "AI-generated children's book illustration of a baptismal font room" },
+    { id: "font-room", group: "ai", name: "Baptismal font", src: "static/art/storybook-baptismal-font.webp", alt: "AI-generated illustration of a baptismal font room" },
     { id: "christus-simple", group: "ai", name: "Christus · simplified", src: "static/art/storybook-christus-simplified.webp", alt: "Simplified AI-generated illustration based on the Temple Square Christus statue" },
-    { id: "christ-line", group: "ai", name: "Christ · welcome", src: "static/art/storybook-christ-open-arms.webp", alt: "AI-generated children's book illustration of Jesus Christ with open arms" },
-    { id: "christ-color", group: "ai", name: "Good Shepherd", src: "static/art/storybook-good-shepherd.webp", alt: "AI-generated children's book illustration of Jesus Christ holding a lamb" },
-    { id: "baptism-river", group: "ai", name: "Baptism · river", src: "static/art/storybook-baptism-river.webp", alt: "AI-generated children's book illustration of Jesus Christ and John the Baptist in a river" }
+    { id: "christ-line", group: "ai", name: "Christ · welcome", src: "static/art/storybook-christ-open-arms.webp", alt: "AI-generated illustration of Jesus Christ with open arms" },
+    { id: "christ-color", group: "ai", name: "Good Shepherd", src: "static/art/storybook-good-shepherd.webp", alt: "AI-generated illustration of Jesus Christ holding a lamb" },
+    { id: "baptism-river", group: "ai", name: "Baptism · river", src: "static/art/storybook-baptism-river.webp", alt: "AI-generated illustration of Jesus Christ and John the Baptist in a river" },
+    { id: "watercolor-baptism", group: "ai", name: "Baptism of Jesus · 1", src: "static/art/watercolor-baptism-of-jesus.webp", alt: "AI-generated illustration of Jesus Christ being baptized by John the Baptist" },
+    { id: "watercolor-lamb", group: "ai", name: "Jesus with the lamb · 1", src: "static/art/watercolor-jesus-with-lamb.webp", alt: "AI-generated illustration of Jesus Christ holding a lamb" },
+    { id: "watercolor-christus", group: "ai", name: "Christus · 1", src: "static/art/watercolor-christus.webp", alt: "AI-generated illustration of the Christus statue" },
+    { id: "watercolor-open-arms", group: "ai", name: "Jesus · welcome · 1", src: "static/art/watercolor-jesus-open-arms.webp", alt: "AI-generated illustration of Jesus Christ with welcoming open arms" },
+    { id: "watercolor-temple", group: "ai", name: "Temple · 1", src: "static/art/watercolor-lds-temple.webp", alt: "AI-generated illustration of a Latter-day Saint temple" },
+    { id: "watercolor-font", group: "ai", name: "Baptismal font · 1", src: "static/art/watercolor-baptismal-font.webp", alt: "AI-generated illustration of a baptismal font" },
+    { id: "watercolor-waters-mormon", group: "ai", name: "Waters of Mormon · 1", src: "static/art/watercolor-waters-of-mormon.webp", alt: "AI-generated scene of Alma baptizing Helam at the Waters of Mormon" },
+    { id: "childrens-baptism", group: "ai", name: "Baptism of Jesus · 2", src: "static/art/lds-childrens-baptism-of-jesus.webp", alt: "AI-generated illustration of Jesus Christ being baptized by John the Baptist" },
+    { id: "childrens-lamb", group: "ai", name: "Jesus with the lamb · 2", src: "static/art/lds-childrens-jesus-with-lamb.webp", alt: "AI-generated illustration of Jesus Christ holding a lamb" },
+    { id: "childrens-christus", group: "ai", name: "Christus · 2", src: "static/art/lds-childrens-christus.webp", alt: "AI-generated illustration of the Christus statue" },
+    { id: "childrens-open-arms", group: "ai", name: "Jesus · welcome · 2", src: "static/art/lds-childrens-jesus-open-arms.webp", alt: "AI-generated illustration of Jesus Christ with welcoming open arms" },
+    { id: "childrens-temple", group: "ai", name: "Temple · 2", src: "static/art/lds-childrens-temple.webp", alt: "AI-generated illustration of a Latter-day Saint temple" },
+    { id: "childrens-font", group: "ai", name: "Baptismal font · 2", src: "static/art/lds-childrens-baptismal-font.webp", alt: "AI-generated illustration of a baptismal font" },
+    { id: "childrens-waters-mormon", group: "ai", name: "Waters of Mormon · 2", src: "static/art/lds-childrens-waters-of-mormon.webp", alt: "AI-generated scene of Alma baptizing Helam at the Waters of Mormon" }
   ];
   const builtInArtIds = ["", ...builtInArt.map(({ id: artId }) => artId)];
 
   const imagePattern = /^data:image\/(?:jpeg|png|webp);base64,/;
   const draftKey = "baptism-program-document-v2";
+  const pageClipboardStorageKey = "baptism-program-page-clipboard-v1";
+  const pageClipboardDatabase = "baptism-program-shared-clipboard";
   let selectedPage = "front";
   let focusMode = false;
   let previewZoom = 1;
@@ -125,7 +144,7 @@
       },
       markdown: { text: "Use **bold** and *italic* for emphasis.\n\nA blank line starts a new paragraph.\n\n- Put list items on their own lines\n- Separated from other text by a blank line", align: "left" },
       image: { data: "", art: "", size: "medium", shape: "soft", caption: "" },
-      decoration: { style: "olive", size: "medium" },
+      decoration: { style: "olive", size: "medium", data: "" },
       spacer: { size: "medium" }
     };
     const merged = { id: id(), type, ...defaults[type], ...values };
@@ -468,7 +487,7 @@
   function defaultDocument() {
     return {
       theme: { ...themes.classic },
-      pages: contentTemplates["child-same-day"].build()
+      pages: contentTemplates["service-one-hymn"].build()
     };
   }
 
@@ -497,21 +516,64 @@
     }
   }
 
+  function openPageClipboardDatabase() {
+    return new Promise((resolve, reject) => {
+      if (!globalThis.indexedDB) {
+        reject(new Error("Shared browser storage is unavailable."));
+        return;
+      }
+      const request = indexedDB.open(pageClipboardDatabase, 1);
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains("pages")) request.result.createObjectStore("pages");
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error("Could not open shared browser storage."));
+      request.onblocked = () => reject(new Error("Shared browser storage is blocked."));
+    });
+  }
+
+  async function storeSharedPageClipboard(payload) {
+    const database = await openPageClipboardDatabase();
+    await new Promise((resolve, reject) => {
+      const transaction = database.transaction("pages", "readwrite");
+      transaction.objectStore("pages").put(payload, "current-page");
+      transaction.oncomplete = resolve;
+      transaction.onerror = () => reject(transaction.error || new Error("Could not store the copied page."));
+      transaction.onabort = () => reject(transaction.error || new Error("Could not store the copied page."));
+    });
+    database.close();
+  }
+
+  async function readSharedPageClipboard() {
+    const database = await openPageClipboardDatabase();
+    const value = await new Promise((resolve, reject) => {
+      const request = database.transaction("pages", "readonly").objectStore("pages").get("current-page");
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error("Could not read the copied page."));
+    });
+    database.close();
+    return parsePageClipboard(value);
+  }
+
   async function copyCurrentPage() {
     pageClipboard = pageClipboardPayload(currentPage());
     const serialized = JSON.stringify(pageClipboard);
     try {
-      sessionStorage.setItem("baptism-program-page-clipboard-v1", serialized);
+      localStorage.setItem(pageClipboardStorageKey, serialized);
     } catch {
-      // The in-memory copy still works when a page contains an image too large for storage.
+      // IndexedDB supports larger image-rich pages when local storage is full.
     }
     try {
-      await navigator.clipboard?.writeText(serialized);
+      sessionStorage.setItem(pageClipboardStorageKey, serialized);
     } catch {
-      // Clipboard permission is optional; the in-app copy remains available.
+      // The in-memory copy remains available in this window.
     }
+    await Promise.allSettled([
+      storeSharedPageClipboard(pageClipboard),
+      navigator.clipboard?.writeText(serialized)
+    ]);
     const label = pageDefinitions.find((entry) => entry.id === selectedPage)?.label || "Page";
-    showStatus(`${label} copied. Choose a page and paste.`);
+    showStatus(`${label} copied. You can paste it into another program window.`);
   }
 
   async function readPageClipboard() {
@@ -519,11 +581,19 @@
       const fromSystem = parsePageClipboard(await navigator.clipboard?.readText());
       if (fromSystem) return fromSystem;
     } catch {
-      // Fall through to the in-app clipboard.
+      // Fall through to shared browser storage.
     }
     if (pageClipboard) return pageClipboard;
     try {
-      return parsePageClipboard(sessionStorage.getItem("baptism-program-page-clipboard-v1"));
+      const shared = await readSharedPageClipboard();
+      if (shared) return shared;
+    } catch {
+      // Fall through to the smaller browser-storage copies.
+    }
+    try {
+      const local = parsePageClipboard(localStorage.getItem(pageClipboardStorageKey));
+      if (local) return local;
+      return parsePageClipboard(sessionStorage.getItem(pageClipboardStorageKey));
     } catch {
       return null;
     }
@@ -647,6 +717,7 @@
       const legacyStyles = { floral: "olive", waves: "water", dots: "rays", diamond: "temple" };
       clean.style = sanitizeChoice(legacyStyles[candidate.style] || candidate.style, decorationStyles, "olive");
       clean.size = sanitizeChoice(candidate.size, ["small", "medium", "large"], "medium");
+      clean.data = imagePattern.test(candidate.data || "") ? candidate.data : "";
     } else if (candidate.type === "spacer") {
       clean.size = sanitizeChoice(candidate.size, ["small", "medium", "large"], "medium");
     }
@@ -730,7 +801,12 @@
     };
 
     if (style === "water") {
-      [17, 32, 47].forEach((y) => shape("path", { d: `M8 ${y} C20 ${y - 8}, 30 ${y - 8}, 42 ${y} S64 ${y + 8}, 76 ${y} S98 ${y - 8}, 112 ${y}`, fill: "none" }));
+      shape("path", { d: "M60 7C52 19 48 25 48 32a12 12 0 0 0 24 0c0-7-4-13-12-25z", fill: "none" });
+      shape("path", { d: "M31 43c8-5 18-7 29-7s21 2 29 7M19 51c11-6 25-9 41-9s30 3 41 9M9 58c14-7 31-10 51-10s37 3 51 10", fill: "none" });
+    } else if (style === "jordan") {
+      shape("path", { d: "M13 58c12-7 20-14 25-23 5-8 8-17 9-27M107 58c-12-7-20-14-25-23-5-8-8-17-9-27", fill: "none" });
+      shape("path", { d: "M47 8c5 5 8 10 8 16 0 8-5 14-13 20-5 4-9 9-12 14M73 8c-5 5-8 10-8 16 0 8 5 14 13 20 5 4 9 9 12 14", fill: "none" });
+      shape("path", { d: "M49 52c7-3 15-3 22 0M52 43c5-2 11-2 16 0M55 34c3-1 7-1 10 0", fill: "none" });
     } else if (style === "dove") {
       shape("path", { d: "M12 40c19 2 34-2 46-13 9-8 22-10 49-5-14 5-23 12-29 22-7 11-19 17-34 14-11-2-20-8-27-14z", fill: "none" });
       shape("path", { d: "M54 30C42 24 35 15 35 5c10 4 19 11 25 20", fill: "none" });
@@ -740,8 +816,13 @@
       shape("path", { d: "M10 17c20-5 36-1 50 9v30c-14-10-30-14-50-9zm100 0c-20-5-36-1-50 9v30c14-10 30-14 50-9z", fill: "none" });
       shape("path", { d: "M60 26v30M18 25c13-2 24 0 34 5M18 34c13-2 24 0 34 5m50-14c-13-2-24 0-34 5m34 4c-13-2-24 0-34 5", fill: "none" });
     } else if (style === "temple") {
-      shape("path", { d: "M8 57h104M20 57V40h18V29h16V17h4V8l2-5 2 5v9h4v12h16v11h18v17", fill: "none" });
-      shape("path", { d: "M48 57V43h24v14M56 43V32h8v11", fill: "none" });
+      shape("path", { d: "M8 58h104M16 58V45h19V34h13V22h8V11h8v11h8v12h13v11h19v13", fill: "none" });
+      shape("path", { d: "M56 11 60 3l4 8M51 58V43h18v15M57 43V31h6v12", fill: "none" });
+      shape("path", { d: "M23 50h5m8-9h6m36 0h6m8 9h5", fill: "none" });
+    } else if (style === "tree-life") {
+      shape("path", { d: "M60 58V34m0 8L45 27m15 9 16-14M52 35 36 38m32-8 17 4M60 34 58 17", fill: "none" });
+      [[58, 11, 7], [42, 18, 8], [76, 16, 8], [29, 29, 7], [91, 29, 7], [47, 30, 8], [72, 29, 8], [38, 42, 6], [84, 41, 6]].forEach(([cx, cy, r]) => shape("circle", { cx, cy, r, fill: "none" }));
+      shape("path", { d: "M45 59c5-5 10-7 15-7s10 2 15 7", fill: "none" });
     } else if (style === "rays") {
       shape("path", { d: "M60 5v16M25 17l12 12M8 47h18m69 0h17M95 17 83 29", fill: "none" });
       shape("path", { d: "M37 55c3-11 11-18 23-18s20 7 23 18", fill: "none" });
@@ -749,12 +830,21 @@
     return svg;
   }
 
-  function renderDecoration(target, decoration) {
+  function renderDecoration(target, decoration, forPrint) {
     target.className = `program-decoration decoration-${decoration.style} size-${decoration.size}`;
     target.setAttribute("role", "img");
     target.setAttribute("aria-label", decorationOptions.find(([value]) => value === decoration.style)?.[1] || "Decoration");
     if (decoration.style === "olive") target.append(make("span", "decoration-art"));
-    else if (decoration.style !== "line") target.append(decorationSvg(decoration.style));
+    else if (decoration.style === "custom") {
+      if (imagePattern.test(decoration.data)) {
+        const image = make("img", "decoration-custom-image");
+        image.src = decoration.data;
+        image.alt = "";
+        target.append(image);
+      } else if (!forPrint) {
+        target.append(make("span", "decoration-placeholder", "Upload an image"));
+      }
+    } else if (decoration.style !== "line") target.append(decorationSvg(decoration.style));
   }
 
   function escapeHtml(value) {
@@ -880,8 +970,9 @@
       return figure;
     }
     if (item.type === "decoration") {
+      if (item.style === "custom" && !imagePattern.test(item.data) && forPrint) return make("span", "empty-print-block");
       const node = make("div");
-      renderDecoration(node, item);
+      renderDecoration(node, item, forPrint);
       return node;
     }
     return make("div", `program-spacer size-${item.size}`);
@@ -1296,9 +1387,44 @@
       card.append(labelControl("Caption", inputControl(item.caption, (value) => changeBlock(item, "caption", value))));
     } else if (item.type === "decoration") {
       card.append(makeRow([
-        labelControl("Symbol", selectControl(item.style, decorationOptions, (value) => changeBlock(item, "style", value))),
+        labelControl("Symbol", selectControl(item.style, decorationOptions, (value) => {
+          item.style = value;
+          renderBlockEditor();
+          renderPages();
+          scheduleSave();
+        })),
         labelControl("Size", selectControl(item.size, [["small", "Small"], ["medium", "Medium"], ["large", "Large"]], (value) => changeBlock(item, "size", value)))
       ]));
+      if (item.style === "custom") {
+        if (imagePattern.test(item.data)) {
+          const thumbnail = make("img", "editor-thumbnail is-built-in");
+          thumbnail.src = item.data;
+          thumbnail.alt = "Custom decoration";
+          card.append(thumbnail);
+        }
+        const actions = make("div", "image-actions");
+        const picker = make("label", "image-picker", item.data ? "Replace image" : "Upload your own");
+        const file = document.createElement("input");
+        file.type = "file";
+        file.accept = "image/jpeg,image/png,image/webp";
+        file.hidden = true;
+        file.addEventListener("change", () => handleDecorationImage(file, item));
+        picker.append(file);
+        actions.append(picker);
+        if (item.data) {
+          const clear = make("button", "quiet-button danger", "Clear image");
+          clear.type = "button";
+          clear.addEventListener("click", () => {
+            item.data = "";
+            renderBlockEditor();
+            renderPages();
+            storeDraft();
+          });
+          actions.append(clear);
+        }
+        card.append(actions);
+        card.append(make("p", "field-hint", "A small PNG with a transparent background works best, like a simple line drawing or symbol."));
+      }
     } else {
       card.append(labelControl("Amount", selectControl(item.size, [["small", "Small"], ["medium", "Medium"], ["large", "Large"]], (value) => changeBlock(item, "size", value))));
     }
@@ -1426,6 +1552,48 @@
       renderPages();
       storeDraft();
       showStatus("Image added.");
+    } catch (error) {
+      showStatus(error.message, true);
+    }
+  }
+
+  function resizeDecorationImage(file) {
+    return new Promise((resolve, reject) => {
+      const objectUrl = URL.createObjectURL(file);
+      const source = new Image();
+      source.onload = () => {
+        const maxDimension = 600;
+        const scale = Math.min(1, maxDimension / Math.max(source.naturalWidth, source.naturalHeight));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(source.naturalWidth * scale));
+        canvas.height = Math.max(1, Math.round(source.naturalHeight * scale));
+        const context = canvas.getContext("2d");
+        context.drawImage(source, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(objectUrl);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      source.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("That image could not be read."));
+      };
+      source.src = objectUrl;
+    });
+  }
+
+  async function handleDecorationImage(input, item) {
+    const file = input.files[0];
+    if (!file) return;
+    if (!/image\/(?:jpeg|png|webp)/.test(file.type) || file.size > 12 * 1024 * 1024) {
+      showStatus("Choose a JPEG, PNG, or WebP image smaller than 12 MB.", true);
+      return;
+    }
+    try {
+      showStatus("Preparing image…");
+      item.data = await resizeDecorationImage(file);
+      renderBlockEditor();
+      renderPages();
+      storeDraft();
+      showStatus("Decoration added.");
     } catch (error) {
       showStatus(error.message, true);
     }

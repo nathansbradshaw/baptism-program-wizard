@@ -18,6 +18,10 @@ The copies in this project were trimmed, resized, and converted to WebP. The edi
 
 ## AI-generated artwork
 
-The Baptismal Font, Simplified Christus, Christ Welcome, Good Shepherd, and Baptism River storybook illustrations were generated with OpenAI image generation for this project on August 28, 2026. They are visibly separated and labeled as AI-generated in the editor.
+The Baptismal Font, Simplified Christus, Christ Welcome, Good Shepherd, and Baptism River illustrations were generated with OpenAI image generation for this project on August 28, 2026.
 
 The **Simplified Christus** illustration is a stylized derivative of the public-domain [Temple Square Christus photograph](https://commons.wikimedia.org/wiki/File:Christus_statue_temple_square_salt_lake_city.jpg) listed above. It preserves the sculpture's recognizable open-arm pose while replacing the photographic setting with simplified line and tonal shapes.
+
+The additional illustrations were generated with OpenAI image generation for this project on August 29, 2026. Each image was reviewed for a respectful depiction, simplified for small program layouts, exported with a true alpha-transparent background, and converted to WebP for the editor.
+
+The AI-generated collection includes multiple versions of the Baptism of Jesus, Jesus with a lamb, the Christus statue, Jesus with welcoming arms, a Latter-day Saint temple, a baptismal font, and Alma baptizing Helam at the Waters of Mormon. All generated images are kept together in one section of the editor.
