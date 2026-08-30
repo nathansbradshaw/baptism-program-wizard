@@ -750,6 +750,37 @@ pub fn download_save() {
     show_status("Save downloaded.", false);
 }
 
+enum SaveParseError {
+    InvalidJson,
+    Unsupported,
+}
+
+/// Parses a `{format, version, ...}` save payload (from a file or the
+/// clipboard) into a document, mirroring the `sanitizeDocument`/
+/// `legacyDocument` dispatch in the load-save handler.
+fn parse_save_text(text: &str) -> Result<(Document_, bool), SaveParseError> {
+    let parsed: serde_json::Value = serde_json::from_str(text).map_err(|_| SaveParseError::InvalidJson)?;
+    let format_ok = parsed.get("format").and_then(|v| v.as_str()) == Some("baptism-program");
+    let version = parsed.get("version").and_then(|v| v.as_i64());
+    let loaded = match (format_ok, version) {
+        (true, Some(2)) => parsed.get("document").map(sanitize_document),
+        (true, Some(1)) => Some(legacy_document(parsed.get("fields").unwrap_or(&serde_json::Value::Null))),
+        _ => None,
+    };
+    loaded.map(|doc| (doc, version == Some(1))).ok_or(SaveParseError::Unsupported)
+}
+
+fn apply_loaded_document(document: Document_) {
+    STATE.with(|s| {
+        let mut state = s.borrow_mut();
+        state.document = document;
+        state.selected_page = PageId::Front;
+    });
+    update_theme_inputs();
+    render_all();
+    store_draft();
+}
+
 pub fn load_save(file: File) {
     if file.size() > 20.0 * 1024.0 * 1024.0 {
         show_status("That save is larger than the 20 MB limit.", true);
@@ -757,42 +788,65 @@ pub fn load_save(file: File) {
     }
     wasm_bindgen_futures::spawn_local(async move {
         let blob: &web_sys::Blob = file.unchecked_ref();
-        let text_promise = blob.text();
-        let text = match wasm_bindgen_futures::JsFuture::from(text_promise).await {
+        let text = match wasm_bindgen_futures::JsFuture::from(blob.text()).await {
             Ok(value) => value.as_string().unwrap_or_default(),
             Err(_) => {
                 show_status("The selected file could not be read.", true);
                 return;
             }
         };
-        let parsed: serde_json::Value = match serde_json::from_str(&text) {
-            Ok(v) => v,
+        match parse_save_text(&text) {
+            Ok((document, is_legacy)) => {
+                apply_loaded_document(document);
+                show_status(if is_legacy { "Older save loaded and upgraded." } else { "Save loaded." }, false);
+            }
+            Err(SaveParseError::InvalidJson) => show_status("The selected file is not valid JSON.", true),
+            Err(SaveParseError::Unsupported) => show_status("This is not a supported baptism program save.", true),
+        }
+    });
+}
+
+fn build_save_json() -> String {
+    STATE.with(|s| {
+        let state = s.borrow();
+        let saved_at = String::from(js_sys::Date::new_0().to_iso_string());
+        serde_json::json!({
+            "format": "baptism-program",
+            "version": 2,
+            "savedAt": saved_at,
+            "document": document_to_json(&state.document),
+        })
+        .to_string()
+    })
+}
+
+pub fn copy_save() {
+    let json = build_save_json();
+    wasm_bindgen_futures::spawn_local(async move {
+        match crate::clipboard::write_system_clipboard(&json).await {
+            Ok(()) => show_status("Save copied to clipboard.", false),
+            Err(_) => show_status("Could not copy the save to the clipboard.", true),
+        }
+    });
+}
+
+pub fn load_save_from_clipboard() {
+    wasm_bindgen_futures::spawn_local(async move {
+        let text = match crate::clipboard::read_system_clipboard().await {
+            Ok(text) => text,
             Err(_) => {
-                show_status("The selected file is not valid JSON.", true);
+                show_status("Could not read the clipboard.", true);
                 return;
             }
         };
-        let format_ok = parsed.get("format").and_then(|v| v.as_str()) == Some("baptism-program");
-        let version = parsed.get("version").and_then(|v| v.as_i64());
-        let loaded = match (format_ok, version) {
-            (true, Some(2)) => parsed.get("document").map(sanitize_document),
-            (true, Some(1)) => Some(legacy_document(parsed.get("fields").unwrap_or(&serde_json::Value::Null))),
-            _ => None,
-        };
-        let Some(loaded) = loaded else {
-            show_status("This is not a supported baptism program save.", true);
-            return;
-        };
-        let is_legacy = version == Some(1);
-        STATE.with(|s| {
-            let mut state = s.borrow_mut();
-            state.document = loaded;
-            state.selected_page = PageId::Front;
-        });
-        update_theme_inputs();
-        render_all();
-        store_draft();
-        show_status(if is_legacy { "Older save loaded and upgraded." } else { "Save loaded." }, false);
+        match parse_save_text(&text) {
+            Ok((document, is_legacy)) => {
+                apply_loaded_document(document);
+                show_status(if is_legacy { "Older save loaded and upgraded." } else { "Save loaded from clipboard." }, false);
+            }
+            Err(SaveParseError::InvalidJson) => show_status("Clipboard contents are not valid JSON.", true),
+            Err(SaveParseError::Unsupported) => show_status("Clipboard does not contain a supported baptism program save.", true),
+        }
     });
 }
 
@@ -888,6 +942,8 @@ pub fn init() {
     attach_checkbox_change("monochrome-images", set_monochrome);
     attach_click("reset-theme", reset_theme);
     attach_click("download-save", download_save);
+    attach_click("copy-save", copy_save);
+    attach_click("load-save-clipboard", load_save_from_clipboard);
 
     attach_click("print-program", print_program);
     attach_click("print-sample", print_sample);

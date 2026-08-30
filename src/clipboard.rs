@@ -190,13 +190,13 @@ async fn read_shared_page_clipboard() -> Result<Option<serde_json::Value>, JsVal
 // System clipboard
 // ---------------------------------------------------------------------------
 
-async fn write_system_clipboard(text: &str) -> Result<(), JsValue> {
+pub(crate) async fn write_system_clipboard(text: &str) -> Result<(), JsValue> {
     let clipboard = window().navigator().clipboard();
     JsFuture::from(clipboard.write_text(text)).await?;
     Ok(())
 }
 
-async fn read_system_clipboard() -> Result<String, JsValue> {
+pub(crate) async fn read_system_clipboard() -> Result<String, JsValue> {
     let clipboard = window().navigator().clipboard();
     let value = JsFuture::from(clipboard.read_text()).await?;
     value.as_string().ok_or_else(|| JsValue::from_str("empty clipboard"))
