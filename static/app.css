@@ -155,7 +155,7 @@ textarea { min-height: 78px; resize: vertical; line-height: 1.4; }
 .page-preview-shell:hover .page-preview-viewport { box-shadow: 0 13px 35px rgba(29,40,34,.2); }
 .page-preview-shell.selected .page-preview-viewport { border-color: var(--ui-accent); box-shadow: 0 0 0 4px rgba(80,109,94,.16), 0 13px 35px rgba(29,40,34,.17); }
 .page-preview-shell .program-block { position: relative; cursor: pointer; transition: outline-color .12s, background-color .12s; }
-.page-preview-shell.selected .program-block::before { content: attr(data-block-number); position: absolute; z-index: 4; top: 0; left: -34px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; color: #fff; background: var(--ui-accent); box-shadow: 0 1px 4px rgba(20,30,25,.2); font: 800 11px/1 Arial, sans-serif; }
+.page-preview-shell.selected .program-block::after { content: attr(data-block-number); position: absolute; z-index: 4; top: 0; left: -34px; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; color: #fff; background: var(--ui-accent); box-shadow: 0 1px 4px rgba(20,30,25,.2); font: 800 11px/1 Arial, sans-serif; }
 .page-preview-shell .program-block.is-linked-highlight { outline: 3px solid color-mix(in srgb, var(--page-accent) 62%, transparent); outline-offset: 4px; background: color-mix(in srgb, var(--page-accent) 10%, transparent); }
 .overflow-warning { position: absolute; right: 8px; bottom: 8px; padding: 5px 8px; border-radius: 99px; color: #fff; background: var(--danger); font-size: 9px; font-weight: 800; }
 .print-tip { max-width: 620px; margin: 24px auto 0; padding: 14px 17px; border: 1px solid #d5dad6; border-radius: 10px; color: var(--ui-muted); background: rgba(255,255,255,.65); font-size: 12px; line-height: 1.55; }
@@ -266,7 +266,7 @@ textarea { min-height: 78px; resize: vertical; line-height: 1.4; }
 .decoration-art, .decoration-symbol { display: block; width: 1.35in; height: .36in; }
 .size-small .decoration-art, .size-small .decoration-symbol { width: .9in; height: .2in; }
 .size-large .decoration-art, .size-large .decoration-symbol { width: 2in; height: .58in; }
-.decoration-art { background: currentColor; -webkit-mask: url("static/decorations/olive-branch.png") center / contain no-repeat; mask: url("static/decorations/olive-branch.png") center / contain no-repeat; }
+.decoration-art { background: currentColor; -webkit-mask: url("decorations/olive-branch.png") center / contain no-repeat; mask: url("decorations/olive-branch.png") center / contain no-repeat; }
 .decoration-symbol { overflow: visible; fill: none; stroke: currentColor; stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round; }
 .decoration-dove .decoration-symbol { stroke-width: 2; }
 .decoration-rays .decoration-symbol { stroke-width: 2; }

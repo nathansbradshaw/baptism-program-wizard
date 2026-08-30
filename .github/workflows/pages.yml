@@ -24,11 +24,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Assemble static site
-        run: |
-          mkdir -p dist
-          cp templates/editor.html dist/index.html
-          cp -r static dist/static
+      - name: Install Rust wasm32 target
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Install trunk
+        uses: jetli/trunk-action@v0.5.0
+        with:
+          version: "latest"
+
+      - name: Build static site
+        run: trunk build --release
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
