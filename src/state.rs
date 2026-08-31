@@ -665,7 +665,7 @@ pub fn copy_current_page() {
 
 pub fn paste_current_page() {
     wasm_bindgen_futures::spawn_local(async move {
-        let Some(payload) = crate::clipboard::read_clipboard().await else {
+        let Some(payload) = crate::clipboard::read_page_clipboard().await else {
             show_status("Copy a program page first, then paste it here.", true);
             return;
         };
@@ -680,7 +680,7 @@ pub fn paste_current_page() {
                 return;
             }
         }
-        let blocks = crate::clipboard::blocks_from_payload(&payload);
+        let blocks = crate::clipboard::blocks_from_page_payload(&payload);
         STATE.with(|s| {
             s.borrow_mut().document.page_mut(page_id).blocks = blocks;
         });
@@ -688,6 +688,43 @@ pub fn paste_current_page() {
         render_pages();
         schedule_save();
         show_status(&format!("Copied page pasted onto {label}."), false);
+    });
+}
+
+pub fn copy_block_element(page_id: PageId, block_id: &str) {
+    let block = STATE.with(|s| {
+        let state = s.borrow();
+        state.document.page(page_id).blocks.iter().find(|b| b.id() == block_id).cloned()
+    });
+    let Some(block) = block else { return };
+    let label = block.kind().label();
+    wasm_bindgen_futures::spawn_local(async move {
+        crate::clipboard::copy_block(&block).await;
+        show_status(&format!("{label} copied. You can paste it into another element list."), false);
+    });
+}
+
+pub fn paste_block_element(page_id: PageId, block_id: &str) {
+    let block_id = block_id.to_string();
+    wasm_bindgen_futures::spawn_local(async move {
+        let Some(payload) = crate::clipboard::read_block_clipboard().await else {
+            show_status("Copy an element first, then paste it here.", true);
+            return;
+        };
+        let Some(block) = crate::clipboard::block_from_payload(&payload) else {
+            show_status("Clipboard does not contain a supported element.", true);
+            return;
+        };
+        STATE.with(|s| {
+            let mut state = s.borrow_mut();
+            let blocks = &mut state.document.page_mut(page_id).blocks;
+            let insert_at = blocks.iter().position(|b| b.id() == block_id).map(|i| i + 1).unwrap_or(blocks.len());
+            blocks.insert(insert_at, block);
+        });
+        render_block_editor();
+        render_pages();
+        schedule_save();
+        show_status("Element pasted.", false);
     });
 }
 

@@ -467,10 +467,45 @@ pub fn render_block_editor(doc: &Document, page_id: PageId, page: &Page) {
         card.append_child(&header).ok();
 
         render_block_fields(doc, &card, page_id, block);
+        render_element_clipboard_controls(doc, &card, page_id, block.id());
         wire_linked_highlight(&card, block.id());
         list.append_child(&card).ok();
     }
     state::apply_linked_highlight();
+}
+
+/// A small, collapsed "Copy / paste this element" control tucked at the
+/// bottom of each block card — used rarely (moving elements between designs),
+/// so it stays out of the way rather than sitting alongside the main actions.
+fn render_element_clipboard_controls(doc: &Document, card: &Element, page_id: PageId, block_id: &str) {
+    let details = doc.create_element("details").unwrap();
+    details.set_class_name("advanced-style");
+    details.append_child(&make_text(doc, "summary", "", "Copy / paste this element")).ok();
+
+    let row = make(doc, "div", "page-clipboard-actions");
+
+    let copy: HtmlButtonElement = doc.create_element("button").unwrap().dyn_into().unwrap();
+    copy.set_class_name("secondary-button");
+    copy.set_text_content(Some("Copy element"));
+    copy.set_attribute("type", "button").ok();
+    let block_id_for_copy = block_id.to_string();
+    let onclick_copy = Closure::<dyn FnMut()>::new(move || state::copy_block_element(page_id, &block_id_for_copy));
+    copy.set_onclick(Some(onclick_copy.as_ref().unchecked_ref()));
+    onclick_copy.forget();
+    row.append_child(&copy).ok();
+
+    let paste: HtmlButtonElement = doc.create_element("button").unwrap().dyn_into().unwrap();
+    paste.set_class_name("secondary-button");
+    paste.set_text_content(Some("Paste element"));
+    paste.set_attribute("type", "button").ok();
+    let block_id_for_paste = block_id.to_string();
+    let onclick_paste = Closure::<dyn FnMut()>::new(move || state::paste_block_element(page_id, &block_id_for_paste));
+    paste.set_onclick(Some(onclick_paste.as_ref().unchecked_ref()));
+    onclick_paste.forget();
+    row.append_child(&paste).ok();
+
+    details.append_child(&row).ok();
+    card.append_child(&details).ok();
 }
 
 /// Mirrors the pointerenter/pointerleave/focusin/focusout wiring on each
